@@ -23,151 +23,146 @@ public class DAO {
 		this.myDataSource = dataSource;
 	}
 
-	/**
-	 *
-	 * @return le nombre d'enregistrements dans la table CUSTOMER
-	 * @throws DAOException
-	 */
-	public int numberOfCustomers() throws DAOException {
-		int result = 0;
-
-		String sql = "SELECT COUNT(*) AS NUMBER FROM CUSTOMER";
-		// Syntaxe "try with resources" 
-		// cf. https://stackoverflow.com/questions/22671697/try-try-with-resources-and-connection-statement-and-resultset-closing
-		try (   Connection connection = myDataSource.getConnection(); // Ouvrir une connexion
-			Statement stmt = connection.createStatement(); // On crée un statement pour exécuter une requête
-			ResultSet rs = stmt.executeQuery(sql) // Un ResultSet pour parcourir les enregistrements du résultat
-		) {
-			if (rs.next()) { // Pas la peine de faire while, il y a 1 seul enregistrement
-				// On récupère le champ NUMBER de l'enregistrement courant
-				result = rs.getInt("NUMBER");
-			}
-		} catch (SQLException ex) {
-			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
-			throw new DAOException(ex.getMessage());
-		}
-
-		return result;
-	}
-
-	/**
-	 * Detruire un enregistrement dans la table CUSTOMER
-	 * @param customerId la clé du client à détruire
-	 * @return le nombre d'enregistrements détruits (1 ou 0 si pas trouvé)
-	 * @throws DAOException
-	 */
-	public int deleteCustomer(int customerId) throws DAOException {
-
-		// Une requête SQL paramétrée
-		String sql = "DELETE FROM CUSTOMER WHERE CUSTOMER_ID = ?";
-		try (   Connection connection = myDataSource.getConnection();
-			PreparedStatement stmt = connection.prepareStatement(sql)
-                ) {
-                        // Définir la valeur du paramètre
-			stmt.setInt(1, customerId);
-			
-			return stmt.executeUpdate();
-
-		}  catch (SQLException ex) {
-			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
-			throw new DAOException(ex.getMessage());
-		}
-	}
 	
+        
+
 	/**
+	 * Ajouter un avantage client dans la table
 	 *
-	 * @param customerId la clé du client à recherche
-	 * @return le nombre de bons de commande pour ce client (table PURCHASE_ORDER)
-	 * @throws DAOException
+	 * @param nameDisc le nom du taux
+         * @param rateDisc valeur du taux à ajouter
+	 * @throws DAOException, Exception
 	 */
-	public int numberOfOrdersForCustomer(int customerId) throws DAOException {
-		int result = 0;
+	public void addDiscount(String nameDisc, int rateDisc) throws DAOException, Exception {
+            
+            
+            String sql = "INSERT INTO DISCOUNT_CODE VALUES (?, ?)";
+            
+            try (Connection connection = myDataSource.getConnection(); // On crée un statement pour exécuter une requête
+		PreparedStatement stmt = connection.prepareStatement(sql)) {
+		
+		stmt.setString(1, nameDisc);
+                stmt.setInt(2, rateDisc);
 
-		// Une requête SQL paramétrée
-		String sql = "SELECT COUNT(*) AS NUMBER FROM PURCHASE_ORDER WHERE CUSTOMER_ID = ?";
-		try (   Connection connection = myDataSource.getConnection();
-			PreparedStatement stmt = connection.prepareStatement(sql)
-                ) {
-                        // Définir la valeur du paramètre
-			stmt.setInt(1, customerId);
-
-			try (ResultSet rs = stmt.executeQuery()) {
-				rs.next(); // On a toujours exactement 1 enregistrement dans le résultat
-				result = rs.getInt("NUMBER");
-			}
-		}  catch (SQLException ex) {
-			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
-			throw new DAOException(ex.getMessage());
-		}
-		return result;
+			
+		if(1 == stmt.executeUpdate())
+                {
+                    throw new Exception("Problem of execution");
+                }
+                
+            }  catch (SQLException ex) {
+                Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+		throw new DAOException(ex.getMessage());
+            }
 	}
-
-	/**
-	 * Trouver un Customer à partir de sa clé
+        
+        
+        
+        
+        
+        
+        /**
+	 * Supprimer un avantage client dans la table
 	 *
-	 * @param customerID la clé du CUSTOMER à rechercher
-	 * @return l'enregistrement correspondant dans la table CUSTOMER, ou null si pas trouvé
-	 * @throws DAOException
+	 * @param nameDisc le nom du taux
+	 * @throws DAOException, Exception
 	 */
-	public CustomerEntity findCustomer(int customerID) throws DAOException {
-		CustomerEntity result = null;
+	public void deleteDiscount(String nameDisc) throws DAOException, Exception {
+            
+            
+            String sql = "DELETE FROM DISCOUNT_CODE WHERE = ?";
+            
+            try (Connection connection = myDataSource.getConnection(); // On crée un statement pour exécuter une requête
+		PreparedStatement stmt = connection.prepareStatement(sql)) {
+		
+		stmt.setString(1, nameDisc);
 
-		String sql = "SELECT * FROM CUSTOMER WHERE CUSTOMER_ID = ?";
-		try (Connection connection = myDataSource.getConnection(); // On crée un statement pour exécuter une requête
-			PreparedStatement stmt = connection.prepareStatement(sql)) {
-
-			stmt.setInt(1, customerID);
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (rs.next()) { // On a trouvé
-					String name = rs.getString("NAME");
-					String address = rs.getString("ADDRESSLINE1");
-					// On crée l'objet "entity"
-					result = new CustomerEntity(customerID, name, address);
-				} // else on n'a pas trouvé, on renverra null
-			}
-		}  catch (SQLException ex) {
-			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
-			throw new DAOException(ex.getMessage());
-		}
-
-		return result;
+			
+		if(1 == stmt.executeUpdate())
+                {
+                    throw new Exception("Problem of execution");
+                }
+                
+            }  catch (SQLException ex) {
+                Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+		throw new DAOException(ex.getMessage());
+            }
 	}
+        
+        
+        
+        
+        
+        
+        /**
+	 * modifier un taux de réduction dans la table
+	 *
+	 * @param nameDisc le nom du taux
+         * @param newRate nouveau taux à mettre à jour
+	 * @throws DAOException, Exception
+	 */
+	public void updateDiscount(String nameDisc, int newRate) throws DAOException, Exception {
+            
+            
+            String sql = "UPDATE TABLE SET RATE=? WHERE DISCOUNT_CODE = ?";
+            
+            try (Connection connection = myDataSource.getConnection(); // On crée un statement pour exécuter une requête
+		PreparedStatement stmt = connection.prepareStatement(sql)) {
+		
+		stmt.setInt(1, newRate);
+                stmt.setString(2, nameDisc);
+
+			
+		if(1 == stmt.executeUpdate())
+                {
+                    throw new Exception("Problem of execution");
+                }
+                
+            }  catch (SQLException ex) {
+                Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+		throw new DAOException(ex.getMessage());
+            }
+	}
+        
+        
+        
+        
+        
+        
+        
+        
 
 	/**
-	 * Liste des clients localisés dans un état des USA
+	 * Liste des taux de réduction de la table
 	 *
-	 * @param state l'état à rechercher (2 caractères)
 	 * @return la liste des clients habitant dans cet état
 	 * @throws DAOException
 	 */
-	public List<CustomerEntity> customersInState(String state) throws DAOException {
-		List<CustomerEntity> result = new LinkedList<>(); // Liste vIde
+	public List<Discount_Code_Entity> customersInState() throws DAOException {
+            
+            List<Discount_Code_Entity> result = new LinkedList<>(); // Liste vIde
 
-		String sql = "SELECT * FROM CUSTOMER WHERE STATE = ?";
-		try (Connection connection = myDataSource.getConnection();
-			PreparedStatement stmt = connection.prepareStatement(sql)) {
+            String sql = "SELECT * FROM DISCOUNT_CODE";
+            try (Connection connection = myDataSource.getConnection();
+            	PreparedStatement stmt = connection.prepareStatement(sql)) {
 
-			stmt.setString(1, state);
-
-			try (ResultSet rs = stmt.executeQuery()) {
-				while (rs.next()) { // Tant qu'il y a des enregistrements
-					// On récupère les champs nécessaires de l'enregistrement courant
-					int id = rs.getInt("CUSTOMER_ID");
-					String name = rs.getString("NAME");
-					String address = rs.getString("ADDRESSLINE1");
-					// On crée l'objet entité
-					CustomerEntity c = new CustomerEntity(id, name, address);
-					// On l'ajoute à la liste des résultats
-					result.add(c);
-				}
-			}
-		}  catch (SQLException ex) {
-			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
-			throw new DAOException(ex.getMessage());
+		try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) { // Tant qu'il y a des enregistrements
+                        // On récupère les champs nécessaires de l'enregistrement courant
+			int rate = rs.getInt("RATE");
+			String name = rs.getString("DISCOUNT_CODE");
+			// On crée l'objet entité
+			Discount_Code_Entity c = new Discount_Code_Entity(name, rate);
+			// On l'ajoute à la liste des résultats
+			result.add(c);
+                    }
 		}
+            }  catch (SQLException ex) {
+		Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+		throw new DAOException(ex.getMessage());
+            }
 
-		return result;
-
+        return result;
 	}
 
 }
