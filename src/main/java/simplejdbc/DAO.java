@@ -33,7 +33,7 @@ public class DAO {
          * @param rateDisc valeur du taux à ajouter
 	 * @throws DAOException, Exception
 	 */
-	public void addDiscount(String nameDisc, int rateDisc) throws DAOException, Exception {
+	public void addDiscount(String nameDisc, float rateDisc) throws DAOException, Exception {
             
             
             String sql = "INSERT INTO DISCOUNT_CODE VALUES (?, ?)";
@@ -42,7 +42,7 @@ public class DAO {
 		PreparedStatement stmt = connection.prepareStatement(sql)) {
 		
 		stmt.setString(1, nameDisc);
-                stmt.setInt(2, rateDisc);
+                stmt.setFloat(2, rateDisc);
 
 			
 		if(1 == stmt.executeUpdate())
@@ -138,7 +138,7 @@ public class DAO {
 	 * @return la liste des clients habitant dans cet état
 	 * @throws DAOException
 	 */
-	public List<Discount_Code_Entity> customersInState() throws DAOException {
+	public List<Discount_Code_Entity> discountCodeList() throws DAOException {
             
             List<Discount_Code_Entity> result = new LinkedList<>(); // Liste vIde
 
@@ -161,7 +161,6 @@ public class DAO {
 		Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
 		throw new DAOException(ex.getMessage());
             }
-
         return result;
 	}
 
